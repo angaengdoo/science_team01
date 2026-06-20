@@ -366,10 +366,29 @@
   </div>
 </div>
 
+<!-- ── 모달: 일정 수정 ── -->
+<div class="modal-overlay" id="event-edit-modal">
+  <div class="modal">
+    <h3>✏️ 일정 수정</h3>
+    <div class="form-group"><label>일정명</label><input type="text" id="edit-event-title"></div>
+    <div class="form-group"><label>날짜</label><input type="date" id="edit-event-date"></div>
+    <div class="form-group">
+      <label>구분</label>
+      <select id="edit-event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary btn-danger" onclick="deleteEditEvent()">삭제</button>
+      <button class="btn-secondary" onclick="closeModal('event-edit-modal')">취소</button>
+      <button class="btn-primary" onclick="saveEditEvent()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── 모달: 업무 추가 ── -->
 <div class="modal-overlay" id="task-modal">
   <div class="modal">
     <h3>📋 업무 추가</h3>
+
     <div class="form-group"><label>업무명</label><input type="text" id="task-title"></div>
     <div class="form-group"><label>담당자</label><input type="text" id="task-person"></div>
     <div class="form-group"><label>마감일</label><input type="date" id="task-due"></div>
@@ -380,6 +399,24 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('task-modal')">취소</button>
       <button class="btn-primary" onclick="addTask()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 업무 수정 ── -->
+<div class="modal-overlay" id="task-edit-modal">
+  <div class="modal">
+    <h3>✏️ 업무 수정</h3>
+    <div class="form-group"><label>업무명</label><input type="text" id="edit-task-title"></div>
+    <div class="form-group"><label>담당자</label><input type="text" id="edit-task-person"></div>
+    <div class="form-group"><label>마감일</label><input type="date" id="edit-task-due"></div>
+    <div class="form-group">
+      <label>상태</label>
+      <select id="edit-task-status"><option value="todo">시작 전</option><option value="doing">진행 중</option><option value="done">완료</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('task-edit-modal')">취소</button>
+      <button class="btn-primary" onclick="saveEditTask()">저장</button>
     </div>
   </div>
 </div>
@@ -405,23 +442,55 @@
   </div>
 </div>
 
+<!-- ── 모달: 파일/링크 수정 ── -->
+<div class="modal-overlay" id="file-edit-modal">
+  <div class="modal">
+    <h3>✏️ 링크/파일 수정</h3>
+    <div class="form-group"><label>이름</label><input type="text" id="edit-file-name"></div>
+    <div class="form-group"><label>URL 또는 링크</label><input type="text" id="edit-file-url" placeholder="https://..."></div>
+    <div class="form-group">
+      <label>구분</label>
+      <select id="edit-file-type">
+        <option value="🌐">HTML 시뮬레이션</option><option value="📄">PDF</option>
+        <option value="📊">스프레드시트</option><option value="🔗">링크</option><option value="📁">기타</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('file-edit-modal')">취소</button>
+      <button class="btn-primary" onclick="saveEditFile()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── 게시글 상세 모달 ── -->
 <div class="modal-overlay" id="post-detail-modal">
   <div class="modal" style="width:640px">
-    <div class="post-detail-header">
-      <div class="post-detail-title" id="detail-title"></div>
-      <button class="btn-secondary btn-danger" onclick="deleteCurrentPost()">삭제</button>
-      <button class="btn-secondary" onclick="closeModal('post-detail-modal')">닫기</button>
+    <div id="detail-view-mode">
+      <div class="post-detail-header">
+        <div class="post-detail-title" id="detail-title"></div>
+        <button class="btn-secondary" onclick="enterEditPost()">수정</button>
+        <button class="btn-secondary btn-danger" onclick="deleteCurrentPost()">삭제</button>
+        <button class="btn-secondary" onclick="closeModal('post-detail-modal')">닫기</button>
+      </div>
+      <div class="post-meta" id="detail-meta"></div>
+      <div class="post-detail-body" id="detail-body"></div>
+      <div class="comments-section">
+        <div class="comments-title">댓글</div>
+        <div id="detail-comments"></div>
+        <div class="comment-input-row">
+          <input type="text" id="comment-author-input" placeholder="이름" style="width:100px;flex:none">
+          <input type="text" id="comment-text-input" placeholder="댓글을 입력하세요">
+          <button class="btn-primary" onclick="addComment()" style="flex-shrink:0">등록</button>
+        </div>
+      </div>
     </div>
-    <div class="post-meta" id="detail-meta"></div>
-    <div class="post-detail-body" id="detail-body"></div>
-    <div class="comments-section">
-      <div class="comments-title">댓글</div>
-      <div id="detail-comments"></div>
-      <div class="comment-input-row">
-        <input type="text" id="comment-author-input" placeholder="이름" style="width:100px;flex:none">
-        <input type="text" id="comment-text-input" placeholder="댓글을 입력하세요">
-        <button class="btn-primary" onclick="addComment()" style="flex-shrink:0">등록</button>
+    <div id="detail-edit-mode" style="display:none">
+      <h3>✏️ 글 수정</h3>
+      <div class="form-group"><label>제목</label><input type="text" id="edit-post-title"></div>
+      <div class="form-group"><label>내용</label><textarea id="edit-post-content"></textarea></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cancelEditPost()">취소</button>
+        <button class="btn-primary" onclick="saveEditPost()">저장</button>
       </div>
     </div>
   </div>
@@ -542,13 +611,17 @@ async function addPost() {
 // 게시글 상세 (공지+게시판 공용)
 // ====================================================================
 let currentPostId = null;
+let currentPostCategory = null;
 async function openPost(id) {
   currentPostId = id;
   const { data: post, error } = await db.from('posts').select('*').eq('id', id).single();
   if (error || !post) return alert('게시글을 찾을 수 없습니다.');
+  currentPostCategory = post.category;
   document.getElementById('detail-title').textContent = post.title;
   document.getElementById('detail-meta').textContent = post.author + ' · ' + fmtDate(post.created_at);
   document.getElementById('detail-body').textContent = post.content;
+  document.getElementById('detail-view-mode').style.display = 'block';
+  document.getElementById('detail-edit-mode').style.display = 'none';
   await loadComments(id);
   openModal('post-detail-modal');
 }
@@ -580,6 +653,33 @@ async function deleteCurrentPost() {
   if (error) return alert('삭제 실패: ' + error.message);
   closeModal('post-detail-modal');
   if (post.category === '공지') loadNotices(); else loadPosts();
+}
+async function enterEditPost() {
+  if (!currentPostId) return;
+  const input = prompt('수정하려면 본인 글 비밀번호 또는 관리자 암호를 입력하세요.');
+  if (input === null) return;
+  const { data: post } = await db.from('posts').select('*').eq('id', currentPostId).single();
+  if (!post) return;
+  if (input !== post.password && input !== ADMIN_PASSWORD) {
+    return alert('비밀번호가 일치하지 않습니다.');
+  }
+  document.getElementById('edit-post-title').value = post.title;
+  document.getElementById('edit-post-content').value = post.content;
+  document.getElementById('detail-view-mode').style.display = 'none';
+  document.getElementById('detail-edit-mode').style.display = 'block';
+}
+function cancelEditPost() {
+  document.getElementById('detail-view-mode').style.display = 'block';
+  document.getElementById('detail-edit-mode').style.display = 'none';
+}
+async function saveEditPost() {
+  const title = document.getElementById('edit-post-title').value.trim();
+  const content = document.getElementById('edit-post-content').value.trim();
+  if (!title) return alert('제목을 입력해 주세요.');
+  const { error } = await db.from('posts').update({ title, content }).eq('id', currentPostId);
+  if (error) return alert('수정 실패: ' + error.message);
+  closeModal('post-detail-modal');
+  if (currentPostCategory === '공지') loadNotices(); else loadPosts();
 }
 
 // ====================================================================
@@ -622,7 +722,7 @@ function renderCalendar() {
       const dayEvents = eventsCache.filter(e => e.event_date === dateStr);
       html += `<div class="calendar-day${!thisMonth?' other-month':''}${isToday?' today':''}">
         <div class="day-num">${d}</div>
-        ${dayEvents.map(e=>`<div class="cal-event${e.event_type==='마감'?' notice-ev':''}">${esc(e.title)}</div>`).join('')}
+        ${dayEvents.map(e=>`<div class="cal-event${e.event_type==='마감'?' notice-ev':''}" onclick="event.stopPropagation(); openEventEdit('${e.id}')">${esc(e.title)}</div>`).join('')}
       </div>`;
     }
     if (dayCount > lastDate && row >= 4) break;
@@ -640,20 +740,51 @@ async function addEvent() {
   ['event-title','event-date'].forEach(id => document.getElementById(id).value='');
   loadEvents();
 }
+let currentEventId = null;
+function openEventEdit(id) {
+  const ev = eventsCache.find(e => e.id === id);
+  if (!ev) return;
+  currentEventId = id;
+  document.getElementById('edit-event-title').value = ev.title;
+  document.getElementById('edit-event-date').value = ev.event_date;
+  document.getElementById('edit-event-type').value = ev.event_type;
+  openModal('event-edit-modal');
+}
+async function saveEditEvent() {
+  const title = document.getElementById('edit-event-title').value.trim();
+  const event_date = document.getElementById('edit-event-date').value;
+  const event_type = document.getElementById('edit-event-type').value;
+  if (!title || !event_date) return alert('일정명과 날짜를 입력해 주세요.');
+  const { error } = await db.from('events').update({ title, event_date, event_type }).eq('id', currentEventId);
+  if (error) return alert('수정 실패: ' + error.message);
+  closeModal('event-edit-modal');
+  loadEvents();
+}
+async function deleteEditEvent() {
+  if (!confirm('이 일정을 삭제할까요?')) return;
+  const { error } = await db.from('events').delete().eq('id', currentEventId);
+  if (error) return alert('삭제 실패: ' + error.message);
+  closeModal('event-edit-modal');
+  loadEvents();
+}
 
 // ====================================================================
 // 업무 현황 (칸반)
 // ====================================================================
+let tasksCache = [];
 async function loadTasks() {
   const { data, error } = await db.from('tasks').select('*').order('created_at',{ascending:false});
   ['todo','doing','done'].forEach(s => document.getElementById('col-'+s).innerHTML = '');
   if (error) return;
+  tasksCache = data;
   const tagMap = { todo:'tag-orange', doing:'tag-blue', done:'tag-green' };
   const labelMap = { todo:'시작 전', doing:'진행 중', done:'완료' };
   data.forEach(t => {
     const card = document.createElement('div');
     card.className = 'kanban-card';
-    card.innerHTML = `<span class="kanban-card-del" onclick="deleteTask('${t.id}')">✕</span>
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => { if (!e.target.classList.contains('kanban-card-del')) openTaskEdit(t.id); };
+    card.innerHTML = `<span class="kanban-card-del" onclick="event.stopPropagation(); deleteTask('${t.id}')">✕</span>
       <div class="kanban-card-title">${esc(t.title)}</div>
       <div class="kanban-card-meta"><span class="tag ${tagMap[t.status]}">${labelMap[t.status]}</span>${t.due_date?'마감 '+t.due_date+' · ':''}${esc(t.person)}</div>`;
     document.getElementById('col-'+t.status).appendChild(card);
@@ -683,14 +814,38 @@ async function deleteTask(id) {
   if (error) return alert('삭제 실패: ' + error.message);
   loadTasks();
 }
+let currentTaskId = null;
+function openTaskEdit(id) {
+  const t = tasksCache.find(x => x.id === id);
+  if (!t) return;
+  currentTaskId = id;
+  document.getElementById('edit-task-title').value = t.title;
+  document.getElementById('edit-task-person').value = t.person;
+  document.getElementById('edit-task-due').value = t.due_date || '';
+  document.getElementById('edit-task-status').value = t.status;
+  openModal('task-edit-modal');
+}
+async function saveEditTask() {
+  const title = document.getElementById('edit-task-title').value.trim();
+  const person = document.getElementById('edit-task-person').value.trim() || '미정';
+  const due_date = document.getElementById('edit-task-due').value || null;
+  const status = document.getElementById('edit-task-status').value;
+  if (!title) return alert('업무명을 입력해 주세요.');
+  const { error } = await db.from('tasks').update({ title, person, due_date, status }).eq('id', currentTaskId);
+  if (error) return alert('수정 실패: ' + error.message);
+  closeModal('task-edit-modal');
+  loadTasks();
+}
 
 // ====================================================================
 // 파일 공유
 // ====================================================================
+let filesCache = [];
 async function loadFiles() {
   const { data, error } = await db.from('files').select('*').order('created_at',{ascending:false});
   const el = document.getElementById('file-list');
   if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
+  filesCache = data;
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>공유된 파일이 없습니다.</p></div>'; return; }
   el.innerHTML = data.map(f => `
     <div class="card">
@@ -701,6 +856,7 @@ async function loadFiles() {
           <div class="file-meta">${esc(f.author)} · ${fmtDate(f.created_at)}</div>
         </div>
         ${f.url ? `<a class="file-action" href="${esc(f.url)}" target="_blank">열기 →</a>` : ''}
+        <span class="file-action" onclick="openFileEdit('${f.id}')">수정</span>
         <span class="file-action" style="color:var(--danger)" onclick="deleteFile('${f.id}')">삭제</span>
       </div>
     </div>`).join('');
@@ -721,6 +877,26 @@ async function deleteFile(id) {
   if (!confirm('이 파일을 목록에서 삭제할까요?')) return;
   const { error } = await db.from('files').delete().eq('id', id);
   if (error) return alert('삭제 실패: ' + error.message);
+  loadFiles();
+}
+let currentFileId = null;
+function openFileEdit(id) {
+  const f = filesCache.find(x => x.id === id);
+  if (!f) return;
+  currentFileId = id;
+  document.getElementById('edit-file-name').value = f.name;
+  document.getElementById('edit-file-url').value = f.url || '';
+  document.getElementById('edit-file-type').value = f.file_type;
+  openModal('file-edit-modal');
+}
+async function saveEditFile() {
+  const name = document.getElementById('edit-file-name').value.trim();
+  const url = document.getElementById('edit-file-url').value.trim();
+  const file_type = document.getElementById('edit-file-type').value;
+  if (!name) return alert('이름을 입력해 주세요.');
+  const { error } = await db.from('files').update({ name, url, file_type }).eq('id', currentFileId);
+  if (error) return alert('수정 실패: ' + error.message);
+  closeModal('file-edit-modal');
   loadFiles();
 }
 </script>
