@@ -10,7 +10,7 @@
 ============================================================ -->
 <script>
   const SUPABASE_URL = "https://cwajrrattapxglyaxsfc.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YWpycmF0dGFweGdseWF4c2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MjcwMjcsImV4cCI6MjA5NzUwMzAyN30.RHW9HVmHAn4BB3UbdLLfYhpBWF9hLa9xzFCfqzs94TA";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YWpycmF0dHB4Z2x5YXhzZmMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczODM2NzU3OCwiZXhwIjoyMDUzOTQzNTc4fQ.RHW9HVmHAn4BB3UbdLLfYhpBWF9hLa9xzFCfqzs94TA";
   const SITE_PASSWORD = "science01";       // 사이트 입장 암호
   const ADMIN_PASSWORD = "wldpsla419";     // 모든 글 삭제 가능한 암호
 </script>
@@ -445,9 +445,9 @@ function tryUnlock() {
 // ====================================================================
 // Supabase 초기화
 // ====================================================================
-let supabase;
+let db;
 function initApp() {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   loadNotices();
   loadPosts();
   loadEvents();
@@ -486,7 +486,7 @@ function fmtDate(iso) {
 // 공지사항
 // ====================================================================
 async function loadNotices() {
-  const { data, error } = await supabase.from('posts').select('*').eq('category','공지').order('created_at',{ascending:false});
+  const { data, error } = await db.from('posts').select('*').eq('category','공지').order('created_at',{ascending:false});
   const el = document.getElementById('notice-list');
   if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>등록된 공지가 없습니다.</p></div>'; return; }
@@ -503,7 +503,7 @@ async function addNotice() {
   const content = document.getElementById('notice-content').value.trim();
   const password = document.getElementById('notice-password').value;
   if (!title || !password) return alert('제목과 삭제 비밀번호를 입력해 주세요.');
-  const { error } = await supabase.from('posts').insert({ title, author, content, password, category: '공지' });
+  const { error } = await db.from('posts').insert({ title, author, content, password, category: '공지' });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('notice-modal');
   ['notice-title','notice-author','notice-content','notice-password'].forEach(id => document.getElementById(id).value='');
@@ -514,7 +514,7 @@ async function addNotice() {
 // 자유 게시판
 // ====================================================================
 async function loadPosts() {
-  const { data, error } = await supabase.from('posts').select('*, comments(count)').eq('category','자유').order('created_at',{ascending:false});
+  const { data, error } = await db.from('posts').select('*, comments(count)').eq('category','자유').order('created_at',{ascending:false});
   const el = document.getElementById('post-list');
   if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">✏️</div><p>등록된 글이 없습니다. 첫 글을 작성해 보세요!</p></div>'; return; }
@@ -531,7 +531,7 @@ async function addPost() {
   const content = document.getElementById('post-content').value.trim();
   const password = document.getElementById('post-password').value;
   if (!title || !password) return alert('제목과 삭제 비밀번호를 입력해 주세요.');
-  const { error } = await supabase.from('posts').insert({ title, author, content, password, category: '자유' });
+  const { error } = await db.from('posts').insert({ title, author, content, password, category: '자유' });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('post-modal');
   ['post-title','post-author','post-content','post-password'].forEach(id => document.getElementById(id).value='');
@@ -544,7 +544,7 @@ async function addPost() {
 let currentPostId = null;
 async function openPost(id) {
   currentPostId = id;
-  const { data: post, error } = await supabase.from('posts').select('*').eq('id', id).single();
+  const { data: post, error } = await db.from('posts').select('*').eq('id', id).single();
   if (error || !post) return alert('게시글을 찾을 수 없습니다.');
   document.getElementById('detail-title').textContent = post.title;
   document.getElementById('detail-meta').textContent = post.author + ' · ' + fmtDate(post.created_at);
@@ -553,7 +553,7 @@ async function openPost(id) {
   openModal('post-detail-modal');
 }
 async function loadComments(postId) {
-  const { data, error } = await supabase.from('comments').select('*').eq('post_id', postId).order('created_at',{ascending:true});
+  const { data, error } = await db.from('comments').select('*').eq('post_id', postId).order('created_at',{ascending:true});
   const el = document.getElementById('detail-comments');
   if (error || !data.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">아직 댓글이 없습니다.</div>'; return; }
   el.innerHTML = data.map(c => `<div class="comment-item"><div class="comment-author">${esc(c.author)}</div>${esc(c.content)}</div>`).join('');
@@ -562,7 +562,7 @@ async function addComment() {
   const author = document.getElementById('comment-author-input').value.trim() || '익명';
   const content = document.getElementById('comment-text-input').value.trim();
   if (!content || !currentPostId) return;
-  const { error } = await supabase.from('comments').insert({ post_id: currentPostId, author, content });
+  const { error } = await db.from('comments').insert({ post_id: currentPostId, author, content });
   if (error) return alert('댓글 등록 실패: ' + error.message);
   document.getElementById('comment-text-input').value = '';
   loadComments(currentPostId);
@@ -571,12 +571,12 @@ async function deleteCurrentPost() {
   if (!currentPostId) return;
   const input = prompt('삭제하려면 본인 글 비밀번호 또는 관리자 암호를 입력하세요.');
   if (input === null) return;
-  const { data: post } = await supabase.from('posts').select('password, category').eq('id', currentPostId).single();
+  const { data: post } = await db.from('posts').select('password, category').eq('id', currentPostId).single();
   if (!post) return;
   if (input !== post.password && input !== ADMIN_PASSWORD) {
     return alert('비밀번호가 일치하지 않습니다.');
   }
-  const { error } = await supabase.from('posts').delete().eq('id', currentPostId);
+  const { error } = await db.from('posts').delete().eq('id', currentPostId);
   if (error) return alert('삭제 실패: ' + error.message);
   closeModal('post-detail-modal');
   if (post.category === '공지') loadNotices(); else loadPosts();
@@ -592,7 +592,7 @@ calYear = now.getFullYear(); calMonth = now.getMonth();
 function renderCalendarShell() { renderCalendar(); }
 
 async function loadEvents() {
-  const { data, error } = await supabase.from('events').select('*');
+  const { data, error } = await db.from('events').select('*');
   if (!error) eventsCache = data;
   renderCalendar();
 }
@@ -634,7 +634,7 @@ async function addEvent() {
   const event_date = document.getElementById('event-date').value;
   const event_type = document.getElementById('event-type').value;
   if (!title || !event_date) return alert('일정명과 날짜를 입력해 주세요.');
-  const { error } = await supabase.from('events').insert({ title, event_date, event_type });
+  const { error } = await db.from('events').insert({ title, event_date, event_type });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('event-modal');
   ['event-title','event-date'].forEach(id => document.getElementById(id).value='');
@@ -645,7 +645,7 @@ async function addEvent() {
 // 업무 현황 (칸반)
 // ====================================================================
 async function loadTasks() {
-  const { data, error } = await supabase.from('tasks').select('*').order('created_at',{ascending:false});
+  const { data, error } = await db.from('tasks').select('*').order('created_at',{ascending:false});
   ['todo','doing','done'].forEach(s => document.getElementById('col-'+s).innerHTML = '');
   if (error) return;
   const tagMap = { todo:'tag-orange', doing:'tag-blue', done:'tag-green' };
@@ -671,7 +671,7 @@ async function addTask() {
   const due_date = document.getElementById('task-due').value || null;
   const status = document.getElementById('task-status').value;
   if (!title) return alert('업무명을 입력해 주세요.');
-  const { error } = await supabase.from('tasks').insert({ title, person, due_date, status });
+  const { error } = await db.from('tasks').insert({ title, person, due_date, status });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('task-modal');
   ['task-title','task-person','task-due'].forEach(id => document.getElementById(id).value='');
@@ -679,7 +679,7 @@ async function addTask() {
 }
 async function deleteTask(id) {
   if (!confirm('이 업무를 삭제할까요?')) return;
-  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  const { error } = await db.from('tasks').delete().eq('id', id);
   if (error) return alert('삭제 실패: ' + error.message);
   loadTasks();
 }
@@ -688,7 +688,7 @@ async function deleteTask(id) {
 // 파일 공유
 // ====================================================================
 async function loadFiles() {
-  const { data, error } = await supabase.from('files').select('*').order('created_at',{ascending:false});
+  const { data, error } = await db.from('files').select('*').order('created_at',{ascending:false});
   const el = document.getElementById('file-list');
   if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>공유된 파일이 없습니다.</p></div>'; return; }
@@ -711,7 +711,7 @@ async function addFile() {
   const author = document.getElementById('file-author').value.trim() || '익명';
   const file_type = document.getElementById('file-type').value;
   if (!name) return alert('이름을 입력해 주세요.');
-  const { error } = await supabase.from('files').insert({ name, url, author, file_type });
+  const { error } = await db.from('files').insert({ name, url, author, file_type });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('file-modal');
   ['file-name-input','file-url','file-author'].forEach(id => document.getElementById(id).value='');
@@ -719,7 +719,7 @@ async function addFile() {
 }
 async function deleteFile(id) {
   if (!confirm('이 파일을 목록에서 삭제할까요?')) return;
-  const { error } = await supabase.from('files').delete().eq('id', id);
+  const { error } = await db.from('files').delete().eq('id', id);
   if (error) return alert('삭제 실패: ' + error.message);
   loadFiles();
 }
