@@ -83,6 +83,24 @@
   .section.active { display: block; }
 
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+
+  .board-tabs { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .board-tab {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .15s;
+  }
+  .board-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .board-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+  .board-tab-manage {
+    background: none; border: 1px dashed var(--border); color: var(--text-muted);
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+  }
+  .board-tab-manage:hover { border-color: var(--accent); color: var(--accent); }
+  .category-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; background: var(--bg); border-radius: 7px; margin-bottom: 6px; font-size: 13px;
+  }
+  .category-row .del-cat { color: var(--danger); cursor: pointer; font-size: 12px; }
   .section-title { font-size: 22px; font-weight: 700; }
   .btn-primary {
     background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: 7px;
@@ -252,8 +270,12 @@
   <div class="section" id="section-board">
     <div class="section-header">
       <div class="section-title">자유 게시판</div>
-      <button class="btn-primary" onclick="openModal('post-modal')">+ 글 쓰기</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-secondary" onclick="openCategoryManage()">⚙️ 소분류 관리</button>
+        <button class="btn-primary" onclick="openPostModal()">+ 글 쓰기</button>
+      </div>
     </div>
+    <div class="board-tabs" id="board-tabs"></div>
     <div id="post-list" class="loading">불러오는 중...</div>
   </div>
 
@@ -334,6 +356,10 @@
 <div class="modal-overlay" id="post-modal">
   <div class="modal">
     <h3>💬 글 쓰기</h3>
+    <div class="form-group">
+      <label>게시판</label>
+      <select id="post-category"></select>
+    </div>
     <div class="form-group"><label>제목</label><input type="text" id="post-title"></div>
     <div class="form-group"><label>작성자</label><input type="text" id="post-author"></div>
     <div class="form-group"><label>내용</label><textarea id="post-content"></textarea></div>
@@ -345,6 +371,26 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('post-modal')">취소</button>
       <button class="btn-primary" onclick="addPost()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 게시판 소분류 관리 (관리자) ── -->
+<div class="modal-overlay" id="category-manage-modal">
+  <div class="modal">
+    <h3>🗂️ 게시판 소분류 관리</h3>
+    <div class="form-group">
+      <label>관리자 암호</label>
+      <input type="password" id="category-admin-pw" placeholder="관리자 암호를 입력하세요">
+    </div>
+    <div id="category-list"></div>
+    <div class="form-group" style="margin-top:14px">
+      <label>새 소분류 이름</label>
+      <input type="text" id="new-category-name" placeholder="예: 자료, 질문, 후기">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('category-manage-modal')">닫기</button>
+      <button class="btn-primary" onclick="addCategory()">소분류 추가</button>
     </div>
   </div>
 </div>
@@ -515,9 +561,10 @@ function tryUnlock() {
 // Supabase 초기화
 // ====================================================================
 let db;
-function initApp() {
+async function initApp() {
   db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   loadNotices();
+  await loadBoardCategories();
   loadPosts();
   loadEvents();
   loadTasks();
@@ -580,11 +627,50 @@ async function addNotice() {
 }
 
 // ====================================================================
-// 자유 게시판
+// 자유 게시판 (소분류 지원)
 // ====================================================================
+let boardCategories = [];
+let activeCategory = null;
+
+async function loadBoardCategories() {
+  const { data, error } = await db.from('board_categories').select('*').order('sort_order', { ascending: true });
+  if (error || !data || !data.length) {
+    boardCategories = [{ id: null, name: '자유' }];
+  } else {
+    boardCategories = data;
+  }
+  if (!activeCategory || !boardCategories.find(c => c.name === activeCategory)) {
+    activeCategory = boardCategories[0].name;
+  }
+  renderBoardTabs();
+  populatePostCategorySelect();
+}
+function renderBoardTabs() {
+  const el = document.getElementById('board-tabs');
+  el.innerHTML = boardCategories.map(c =>
+    `<span class="board-tab${c.name===activeCategory?' active':''}" onclick="switchCategory('${esc(c.name)}')">${esc(c.name)}</span>`
+  ).join('');
+}
+function switchCategory(name) {
+  activeCategory = name;
+  renderBoardTabs();
+  loadPosts();
+}
+function populatePostCategorySelect() {
+  const sel = document.getElementById('post-category');
+  if (!sel) return;
+  sel.innerHTML = boardCategories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+  sel.value = activeCategory;
+}
+function openPostModal() {
+  populatePostCategorySelect();
+  openModal('post-modal');
+}
+
 async function loadPosts() {
-  const { data, error } = await db.from('posts').select('*, comments(count)').eq('category','자유').order('created_at',{ascending:false});
   const el = document.getElementById('post-list');
+  if (!activeCategory) { el.innerHTML = ''; return; }
+  const { data, error } = await db.from('posts').select('*, comments(count)').eq('category', activeCategory).order('created_at',{ascending:false});
   if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">✏️</div><p>등록된 글이 없습니다. 첫 글을 작성해 보세요!</p></div>'; return; }
   el.innerHTML = data.map(p => `
@@ -595,15 +681,57 @@ async function loadPosts() {
     </div>`).join('');
 }
 async function addPost() {
+  const category = document.getElementById('post-category').value || activeCategory;
   const title = document.getElementById('post-title').value.trim();
   const author = document.getElementById('post-author').value.trim() || '익명';
   const content = document.getElementById('post-content').value.trim();
   const password = document.getElementById('post-password').value;
   if (!title || !password) return alert('제목과 삭제 비밀번호를 입력해 주세요.');
-  const { error } = await db.from('posts').insert({ title, author, content, password, category: '자유' });
+  const { error } = await db.from('posts').insert({ title, author, content, password, category });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('post-modal');
   ['post-title','post-author','post-content','post-password'].forEach(id => document.getElementById(id).value='');
+  activeCategory = category;
+  renderBoardTabs();
+  loadPosts();
+}
+
+// ── 소분류 관리 (관리자) ──
+function openCategoryManage() {
+  document.getElementById('category-admin-pw').value = '';
+  renderCategoryManageList();
+  openModal('category-manage-modal');
+}
+function renderCategoryManageList() {
+  const el = document.getElementById('category-list');
+  el.innerHTML = boardCategories.map(c => `
+    <div class="category-row">
+      <span>${esc(c.name)}</span>
+      <span class="del-cat" onclick="deleteCategory('${c.id}','${esc(c.name)}')">삭제</span>
+    </div>`).join('');
+}
+async function addCategory() {
+  const pw = document.getElementById('category-admin-pw').value;
+  if (pw !== ADMIN_PASSWORD) return alert('관리자 암호가 일치하지 않습니다.');
+  const name = document.getElementById('new-category-name').value.trim();
+  if (!name) return alert('소분류 이름을 입력해 주세요.');
+  if (name === '공지') return alert('"공지"는 사용할 수 없는 이름입니다.');
+  if (boardCategories.find(c => c.name === name)) return alert('이미 존재하는 소분류입니다.');
+  const { error } = await db.from('board_categories').insert({ name, sort_order: boardCategories.length });
+  if (error) return alert('추가 실패: ' + error.message);
+  document.getElementById('new-category-name').value = '';
+  await loadBoardCategories();
+  renderCategoryManageList();
+}
+async function deleteCategory(id, name) {
+  const pw = document.getElementById('category-admin-pw').value;
+  if (pw !== ADMIN_PASSWORD) return alert('관리자 암호를 먼저 입력해 주세요.');
+  if (boardCategories.length <= 1) return alert('최소 1개의 소분류는 남아있어야 합니다.');
+  if (!confirm(`"${name}" 소분류를 삭제할까요? 해당 소분류의 글은 남지만 더 이상 탭에 표시되지 않습니다.`)) return;
+  const { error } = await db.from('board_categories').delete().eq('id', id);
+  if (error) return alert('삭제 실패: ' + error.message);
+  await loadBoardCategories();
+  renderCategoryManageList();
   loadPosts();
 }
 
