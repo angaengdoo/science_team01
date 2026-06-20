@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>편집팀 AI허브</title>
+
+<!-- ============================================================
+  설정값: 본인 Supabase 프로젝트 정보와 공통 암호를 아래에 입력하세요.
+============================================================ -->
+<script>
+  const SUPABASE_URL = "https://cwajrrattapxglyaxsfc.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YWpycmF0dGFweGdseWF4c2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MjcwMjcsImV4cCI6MjA5NzUwMzAyN30.RHW9HVmHAn4BB3UbdLLfYhpBWF9hLa9xzFCfqzs94TA";
+  const SITE_PASSWORD = "science01";       // 사이트 입장 암호
+  const ADMIN_PASSWORD = "wldpsla419";     // 모든 글 삭제 가능한 암호
+</script>
+<!-- ============================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: #E4E2DC;
+    --accent: #3B5BDB;
+    --accent-light: #EEF2FF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-muted: #9B9B9B;
+    --notice: #E67700;
+    --notice-light: #FFF3CD;
+    --success: #2F9E44;
+    --success-light: #EBFBEE;
+    --danger: #C92A2A;
+    --danger-light: #FFF5F5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: '굴림', Gulim, sans-serif; }
+  body { background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* ── 잠금 화면 ── */
+  #lock-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 999;
+  }
+  .lock-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 40px 36px; width: 360px; max-width: 90vw; text-align: center;
+  }
+  .lock-box .emoji { font-size: 36px; margin-bottom: 10px; }
+  .lock-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .lock-box p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .lock-box input {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px;
+    font-size: 14px; outline: none; margin-bottom: 10px; text-align: center;
+  }
+  .lock-box input:focus { border-color: var(--accent); }
+  .lock-box button {
+    width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 11px 0; font-size: 14px; font-weight: 500; cursor: pointer;
+  }
+  .lock-error { color: var(--danger); font-size: 12px; margin-top: 8px; display: none; }
+
+  #app { display: none; }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between; height: 56px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .logo span { color: var(--text-primary); }
+  nav { display: flex; gap: 4px; }
+  nav button {
+    background: none; border: none; padding: 6px 14px; border-radius: 6px;
+    font-size: 14px; color: var(--text-secondary); cursor: pointer; transition: all .15s;
+  }
+  nav button:hover { background: var(--bg); color: var(--text-primary); }
+  nav button.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+  main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-size: 22px; font-weight: 700; }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: 7px;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity .15s;
+  }
+  .btn-primary:hover { opacity: .88; }
+  .btn-secondary {
+    background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border);
+    padding: 7px 16px; border-radius: 7px; font-size: 13px; cursor: pointer; transition: all .15s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 10px; transition: box-shadow .15s;
+  }
+  .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+
+  .notice-badge {
+    display: inline-block; background: var(--notice); color: #fff; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; margin-right: 8px; vertical-align: middle;
+  }
+  .notice-card { border-left: 3px solid var(--notice); background: var(--notice-light); }
+  .post-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .post-title { font-size: 15px; font-weight: 500; cursor: pointer; line-height: 1.5; }
+  .post-title:hover { color: var(--accent); }
+  .post-preview { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 12px; padding: 28px 32px; width: 560px;
+    max-width: 95vw; max-height: 85vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 18px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px;
+    font-size: 14px; background: var(--bg); outline: none; transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); background: #fff; }
+  .form-group textarea { height: 120px; resize: vertical; }
+  .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+  .post-detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .post-detail-title { font-size: 20px; font-weight: 700; flex: 1; }
+  .post-detail-body {
+    font-size: 14px; line-height: 1.8; color: var(--text-secondary); white-space: pre-wrap;
+    border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;
+  }
+  .comments-section { margin-top: 24px; }
+  .comments-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
+  .comment-item { background: var(--bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; }
+  .comment-author { font-weight: 500; margin-bottom: 3px; font-size: 12px; }
+  .comment-input-row { display: flex; gap: 8px; margin-top: 10px; }
+  .comment-input-row input { flex: 1; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; font-size: 13px; outline: none; }
+  .comment-input-row input:focus { border-color: var(--accent); }
+
+  .calendar-header { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 16px; }
+  .calendar-nav {
+    background: none; border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px;
+    cursor: pointer; font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+  }
+  .calendar-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .calendar-month { font-size: 18px; font-weight: 700; min-width: 140px; text-align: center; }
+  .calendar-grid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .calendar-weekdays { display: grid; grid-template-columns: repeat(7,1fr); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .calendar-weekday { text-align: center; font-size: 12px; font-weight: 500; color: var(--text-muted); padding: 10px 0; }
+  .calendar-weekday:first-child { color: var(--danger); }
+  .calendar-weekday:last-child { color: var(--accent); }
+  .calendar-days { display: grid; grid-template-columns: repeat(7,1fr); }
+  .calendar-day { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: 90px; padding: 8px; cursor: pointer; }
+  .calendar-day:hover { background: var(--accent-light); }
+  .calendar-day:nth-child(7n) { border-right: none; }
+  .calendar-day.other-month .day-num { color: var(--text-muted); }
+  .calendar-day.today .day-num { background: var(--accent); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .day-num { font-size: 13px; font-weight: 500; margin-bottom: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .calendar-day:nth-child(7n+1) .day-num { color: var(--danger); }
+  .calendar-day:nth-child(7n) .day-num { color: var(--accent); }
+  .cal-event { font-size: 11px; background: var(--accent-light); color: var(--accent); border-radius: 3px; padding: 1px 5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-event.notice-ev { background: var(--notice-light); color: var(--notice); }
+
+  .kanban { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .kanban-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .kanban-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .kanban-col-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+  .kanban-count { font-size: 11px; color: var(--text-muted); background: var(--bg); border-radius: 10px; padding: 1px 7px; }
+  .kanban-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; position: relative; }
+  .kanban-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .kanban-card-meta { font-size: 11px; color: var(--text-muted); }
+  .kanban-card-del { position: absolute; top: 8px; right: 10px; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+  .kanban-card-del:hover { color: var(--danger); }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+  .tag-blue { background: var(--accent-light); color: var(--accent); }
+  .tag-green { background: var(--success-light); color: var(--success); }
+  .tag-orange { background: var(--notice-light); color: var(--notice); }
+
+  .file-item { display: flex; align-items: center; gap: 14px; }
+  .file-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .file-info { flex: 1; }
+  .file-name { font-size: 14px; font-weight: 500; }
+  .file-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .file-action { font-size: 12px; color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 500; margin-left: 10px; }
+  .file-action:hover { text-decoration: underline; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; }
+
+  .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+
+  @media (max-width: 640px) {
+    header { padding: 0 16px; }
+    nav button { padding: 6px 10px; font-size: 13px; }
+    main { padding: 20px 16px; }
+    .kanban { grid-template-columns: 1fr; }
+    .modal { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 잠금 화면 ── -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="emoji">🔒</div>
+    <h2>편집팀 AI허브</h2>
+    <p>접속 암호를 입력해 주세요</p>
+    <input type="password" id="lock-input" placeholder="암호 입력" onkeydown="if(event.key==='Enter')tryUnlock()">
+    <button onclick="tryUnlock()">입장하기</button>
+    <div class="lock-error" id="lock-error">암호가 올바르지 않습니다.</div>
+  </div>
+</div>
+
+<!-- ── 앱 본체 ── -->
+<div id="app">
+<header>
+  <div class="logo">편집팀 <span>AI허브</span></div>
+  <nav>
+    <button class="active" onclick="showSection('notice', event)">📢 공지</button>
+    <button onclick="showSection('board', event)">💬 게시판</button>
+    <button onclick="showSection('calendar', event)">📅 일정</button>
+    <button onclick="showSection('kanban', event)">📋 업무</button>
+    <button onclick="showSection('files', event)">📂 파일</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- 공지사항 -->
+  <div class="section active" id="section-notice">
+    <div class="section-header">
+      <div class="section-title">공지사항</div>
+      <button class="btn-primary" onclick="openModal('notice-modal')">+ 공지 작성</button>
+    </div>
+    <div id="notice-list" class="loading">불러오는 중...</div>
+  </div>
+
+  <!-- 자유 게시판 -->
+  <div class="section" id="section-board">
+    <div class="section-header">
+      <div class="section-title">자유 게시판</div>
+      <button class="btn-primary" onclick="openModal('post-modal')">+ 글 쓰기</button>
+    </div>
+    <div id="post-list" class="loading">불러오는 중...</div>
+  </div>
+
+  <!-- 캘린더 -->
+  <div class="section" id="section-calendar">
+    <div class="section-header">
+      <div class="section-title">전체 일정</div>
+      <button class="btn-primary" onclick="openModal('event-modal')">+ 일정 추가</button>
+    </div>
+    <div class="calendar-header">
+      <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+      <div class="calendar-month" id="calendar-month-label"></div>
+      <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="calendar-grid">
+      <div class="calendar-weekdays">
+        <div class="calendar-weekday">일</div><div class="calendar-weekday">월</div><div class="calendar-weekday">화</div>
+        <div class="calendar-weekday">수</div><div class="calendar-weekday">목</div><div class="calendar-weekday">금</div><div class="calendar-weekday">토</div>
+      </div>
+      <div class="calendar-days" id="calendar-days"></div>
+    </div>
+  </div>
+
+  <!-- 업무 현황 -->
+  <div class="section" id="section-kanban">
+    <div class="section-header">
+      <div class="section-title">업무 현황</div>
+      <button class="btn-primary" onclick="openModal('task-modal')">+ 업무 추가</button>
+    </div>
+    <div class="kanban">
+      <div class="kanban-col">
+        <div class="kanban-col-header"><span class="kanban-col-title">⬜ 시작 전</span><span class="kanban-count" id="count-todo">0</span></div>
+        <div id="col-todo"></div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header"><span class="kanban-col-title">🔵 진행 중</span><span class="kanban-count" id="count-doing">0</span></div>
+        <div id="col-doing"></div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header"><span class="kanban-col-title">✅ 완료</span><span class="kanban-count" id="count-done">0</span></div>
+        <div id="col-done"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 파일 공유 -->
+  <div class="section" id="section-files">
+    <div class="section-header">
+      <div class="section-title">파일 공유</div>
+      <button class="btn-primary" onclick="openModal('file-modal')">+ 링크/파일 추가</button>
+    </div>
+    <div id="file-list" class="loading">불러오는 중...</div>
+  </div>
+
+</main>
+</div>
+
+<!-- ── 모달: 공지 작성 ── -->
+<div class="modal-overlay" id="notice-modal">
+  <div class="modal">
+    <h3>📢 공지 작성</h3>
+    <div class="form-group"><label>제목</label><input type="text" id="notice-title"></div>
+    <div class="form-group"><label>작성자</label><input type="text" id="notice-author"></div>
+    <div class="form-group"><label>내용</label><textarea id="notice-content"></textarea></div>
+    <div class="form-group">
+      <label>삭제 비밀번호</label>
+      <input type="password" id="notice-password" placeholder="본인 글 삭제 시 필요합니다">
+      <div class="form-hint">잊지 않게 기억해 주세요. 분실 시 관리자 암호로만 삭제 가능합니다.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('notice-modal')">취소</button>
+      <button class="btn-primary" onclick="addNotice()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 게시글 작성 ── -->
+<div class="modal-overlay" id="post-modal">
+  <div class="modal">
+    <h3>💬 글 쓰기</h3>
+    <div class="form-group"><label>제목</label><input type="text" id="post-title"></div>
+    <div class="form-group"><label>작성자</label><input type="text" id="post-author"></div>
+    <div class="form-group"><label>내용</label><textarea id="post-content"></textarea></div>
+    <div class="form-group">
+      <label>삭제 비밀번호</label>
+      <input type="password" id="post-password" placeholder="본인 글 삭제 시 필요합니다">
+      <div class="form-hint">잊지 않게 기억해 주세요. 분실 시 관리자 암호로만 삭제 가능합니다.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('post-modal')">취소</button>
+      <button class="btn-primary" onclick="addPost()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 일정 추가 ── -->
+<div class="modal-overlay" id="event-modal">
+  <div class="modal">
+    <h3>📅 일정 추가</h3>
+    <div class="form-group"><label>일정명</label><input type="text" id="event-title"></div>
+    <div class="form-group"><label>날짜</label><input type="date" id="event-date"></div>
+    <div class="form-group">
+      <label>구분</label>
+      <select id="event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('event-modal')">취소</button>
+      <button class="btn-primary" onclick="addEvent()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 업무 추가 ── -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <h3>📋 업무 추가</h3>
+    <div class="form-group"><label>업무명</label><input type="text" id="task-title"></div>
+    <div class="form-group"><label>담당자</label><input type="text" id="task-person"></div>
+    <div class="form-group"><label>마감일</label><input type="date" id="task-due"></div>
+    <div class="form-group">
+      <label>상태</label>
+      <select id="task-status"><option value="todo">시작 전</option><option value="doing">진행 중</option><option value="done">완료</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('task-modal')">취소</button>
+      <button class="btn-primary" onclick="addTask()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 파일/링크 추가 ── -->
+<div class="modal-overlay" id="file-modal">
+  <div class="modal">
+    <h3>📂 링크/파일 추가</h3>
+    <div class="form-group"><label>이름</label><input type="text" id="file-name-input"></div>
+    <div class="form-group"><label>URL 또는 링크</label><input type="text" id="file-url" placeholder="https://..."></div>
+    <div class="form-group"><label>작성자</label><input type="text" id="file-author"></div>
+    <div class="form-group">
+      <label>구분</label>
+      <select id="file-type">
+        <option value="🌐">HTML 시뮬레이션</option><option value="📄">PDF</option>
+        <option value="📊">스프레드시트</option><option value="🔗">링크</option><option value="📁">기타</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('file-modal')">취소</button>
+      <button class="btn-primary" onclick="addFile()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 게시글 상세 모달 ── -->
+<div class="modal-overlay" id="post-detail-modal">
+  <div class="modal" style="width:640px">
+    <div class="post-detail-header">
+      <div class="post-detail-title" id="detail-title"></div>
+      <button class="btn-secondary btn-danger" onclick="deleteCurrentPost()">삭제</button>
+      <button class="btn-secondary" onclick="closeModal('post-detail-modal')">닫기</button>
+    </div>
+    <div class="post-meta" id="detail-meta"></div>
+    <div class="post-detail-body" id="detail-body"></div>
+    <div class="comments-section">
+      <div class="comments-title">댓글</div>
+      <div id="detail-comments"></div>
+      <div class="comment-input-row">
+        <input type="text" id="comment-author-input" placeholder="이름" style="width:100px;flex:none">
+        <input type="text" id="comment-text-input" placeholder="댓글을 입력하세요">
+        <button class="btn-primary" onclick="addComment()" style="flex-shrink:0">등록</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====================================================================
+// 잠금 화면
+// ====================================================================
+function tryUnlock() {
+  const val = document.getElementById('lock-input').value;
+  if (val === SITE_PASSWORD) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('lock-error').style.display = 'block';
+  }
+}
+
+// ====================================================================
+// Supabase 초기화
+// ====================================================================
+let supabase;
+function initApp() {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  loadNotices();
+  loadPosts();
+  loadEvents();
+  loadTasks();
+  loadFiles();
+  renderCalendarShell();
+}
+
+// ====================================================================
+// 섹션 전환
+// ====================================================================
+function showSection(name, ev) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  if (ev) ev.currentTarget.classList.add('active');
+}
+
+// ====================================================================
+// 모달 공통
+// ====================================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+}
+
+// ====================================================================
+// 공지사항
+// ====================================================================
+async function loadNotices() {
+  const { data, error } = await supabase.from('posts').select('*').eq('category','공지').order('created_at',{ascending:false});
+  const el = document.getElementById('notice-list');
+  if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>등록된 공지가 없습니다.</p></div>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card notice-card">
+      <div class="post-title" onclick="openPost('${p.id}')"><span class="notice-badge">공지</span>${esc(p.title)}</div>
+      <div class="post-preview">${esc(p.content).slice(0,60)}${p.content.length>60?'...':''}</div>
+      <div class="post-meta">${esc(p.author)} · ${fmtDate(p.created_at)}</div>
+    </div>`).join('');
+}
+async function addNotice() {
+  const title = document.getElementById('notice-title').value.trim();
+  const author = document.getElementById('notice-author').value.trim() || '익명';
+  const content = document.getElementById('notice-content').value.trim();
+  const password = document.getElementById('notice-password').value;
+  if (!title || !password) return alert('제목과 삭제 비밀번호를 입력해 주세요.');
+  const { error } = await supabase.from('posts').insert({ title, author, content, password, category: '공지' });
+  if (error) return alert('등록 실패: ' + error.message);
+  closeModal('notice-modal');
+  ['notice-title','notice-author','notice-content','notice-password'].forEach(id => document.getElementById(id).value='');
+  loadNotices();
+}
+
+// ====================================================================
+// 자유 게시판
+// ====================================================================
+async function loadPosts() {
+  const { data, error } = await supabase.from('posts').select('*, comments(count)').eq('category','자유').order('created_at',{ascending:false});
+  const el = document.getElementById('post-list');
+  if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">✏️</div><p>등록된 글이 없습니다. 첫 글을 작성해 보세요!</p></div>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card">
+      <div class="post-title" onclick="openPost('${p.id}')">${esc(p.title)}</div>
+      <div class="post-preview">${esc(p.content).slice(0,60)}${p.content.length>60?'...':''}</div>
+      <div class="post-meta">${esc(p.author)} · ${fmtDate(p.created_at)} · 댓글 ${p.comments[0]?.count || 0}</div>
+    </div>`).join('');
+}
+async function addPost() {
+  const title = document.getElementById('post-title').value.trim();
+  const author = document.getElementById('post-author').value.trim() || '익명';
+  const content = document.getElementById('post-content').value.trim();
+  const password = document.getElementById('post-password').value;
+  if (!title || !password) return alert('제목과 삭제 비밀번호를 입력해 주세요.');
+  const { error } = await supabase.from('posts').insert({ title, author, content, password, category: '자유' });
+  if (error) return alert('등록 실패: ' + error.message);
+  closeModal('post-modal');
+  ['post-title','post-author','post-content','post-password'].forEach(id => document.getElementById(id).value='');
+  loadPosts();
+}
+
+// ====================================================================
+// 게시글 상세 (공지+게시판 공용)
+// ====================================================================
+let currentPostId = null;
+async function openPost(id) {
+  currentPostId = id;
+  const { data: post, error } = await supabase.from('posts').select('*').eq('id', id).single();
+  if (error || !post) return alert('게시글을 찾을 수 없습니다.');
+  document.getElementById('detail-title').textContent = post.title;
+  document.getElementById('detail-meta').textContent = post.author + ' · ' + fmtDate(post.created_at);
+  document.getElementById('detail-body').textContent = post.content;
+  await loadComments(id);
+  openModal('post-detail-modal');
+}
+async function loadComments(postId) {
+  const { data, error } = await supabase.from('comments').select('*').eq('post_id', postId).order('created_at',{ascending:true});
+  const el = document.getElementById('detail-comments');
+  if (error || !data.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">아직 댓글이 없습니다.</div>'; return; }
+  el.innerHTML = data.map(c => `<div class="comment-item"><div class="comment-author">${esc(c.author)}</div>${esc(c.content)}</div>`).join('');
+}
+async function addComment() {
+  const author = document.getElementById('comment-author-input').value.trim() || '익명';
+  const content = document.getElementById('comment-text-input').value.trim();
+  if (!content || !currentPostId) return;
+  const { error } = await supabase.from('comments').insert({ post_id: currentPostId, author, content });
+  if (error) return alert('댓글 등록 실패: ' + error.message);
+  document.getElementById('comment-text-input').value = '';
+  loadComments(currentPostId);
+}
+async function deleteCurrentPost() {
+  if (!currentPostId) return;
+  const input = prompt('삭제하려면 본인 글 비밀번호 또는 관리자 암호를 입력하세요.');
+  if (input === null) return;
+  const { data: post } = await supabase.from('posts').select('password, category').eq('id', currentPostId).single();
+  if (!post) return;
+  if (input !== post.password && input !== ADMIN_PASSWORD) {
+    return alert('비밀번호가 일치하지 않습니다.');
+  }
+  const { error } = await supabase.from('posts').delete().eq('id', currentPostId);
+  if (error) return alert('삭제 실패: ' + error.message);
+  closeModal('post-detail-modal');
+  if (post.category === '공지') loadNotices(); else loadPosts();
+}
+
+// ====================================================================
+// 캘린더
+// ====================================================================
+let calYear, calMonth, eventsCache = [];
+const now = new Date();
+calYear = now.getFullYear(); calMonth = now.getMonth();
+
+function renderCalendarShell() { renderCalendar(); }
+
+async function loadEvents() {
+  const { data, error } = await supabase.from('events').select('*');
+  if (!error) eventsCache = data;
+  renderCalendar();
+}
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function renderCalendar() {
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('calendar-month-label').textContent = calYear + '년 ' + months[calMonth];
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevLastDate = new Date(calYear, calMonth, 0).getDate();
+  const todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  let html = ''; let dayCount = 1, nextDay = 1;
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 7; col++) {
+      const cell = row * 7 + col;
+      let d, thisMonth = true;
+      if (cell < firstDay) { d = prevLastDate - firstDay + cell + 1; thisMonth = false; }
+      else if (dayCount > lastDate) { d = nextDay++; thisMonth = false; }
+      else { d = dayCount++; }
+      const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const isToday = thisMonth && dateStr === todayStr;
+      const dayEvents = eventsCache.filter(e => e.event_date === dateStr);
+      html += `<div class="calendar-day${!thisMonth?' other-month':''}${isToday?' today':''}">
+        <div class="day-num">${d}</div>
+        ${dayEvents.map(e=>`<div class="cal-event${e.event_type==='마감'?' notice-ev':''}">${esc(e.title)}</div>`).join('')}
+      </div>`;
+    }
+    if (dayCount > lastDate && row >= 4) break;
+  }
+  document.getElementById('calendar-days').innerHTML = html;
+}
+async function addEvent() {
+  const title = document.getElementById('event-title').value.trim();
+  const event_date = document.getElementById('event-date').value;
+  const event_type = document.getElementById('event-type').value;
+  if (!title || !event_date) return alert('일정명과 날짜를 입력해 주세요.');
+  const { error } = await supabase.from('events').insert({ title, event_date, event_type });
+  if (error) return alert('등록 실패: ' + error.message);
+  closeModal('event-modal');
+  ['event-title','event-date'].forEach(id => document.getElementById(id).value='');
+  loadEvents();
+}
+
+// ====================================================================
+// 업무 현황 (칸반)
+// ====================================================================
+async function loadTasks() {
+  const { data, error } = await supabase.from('tasks').select('*').order('created_at',{ascending:false});
+  ['todo','doing','done'].forEach(s => document.getElementById('col-'+s).innerHTML = '');
+  if (error) return;
+  const tagMap = { todo:'tag-orange', doing:'tag-blue', done:'tag-green' };
+  const labelMap = { todo:'시작 전', doing:'진행 중', done:'완료' };
+  data.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'kanban-card';
+    card.innerHTML = `<span class="kanban-card-del" onclick="deleteTask('${t.id}')">✕</span>
+      <div class="kanban-card-title">${esc(t.title)}</div>
+      <div class="kanban-card-meta"><span class="tag ${tagMap[t.status]}">${labelMap[t.status]}</span>${t.due_date?'마감 '+t.due_date+' · ':''}${esc(t.person)}</div>`;
+    document.getElementById('col-'+t.status).appendChild(card);
+  });
+  updateKanbanCounts();
+}
+function updateKanbanCounts() {
+  ['todo','doing','done'].forEach(id => {
+    document.getElementById('count-'+id).textContent = document.getElementById('col-'+id).children.length;
+  });
+}
+async function addTask() {
+  const title = document.getElementById('task-title').value.trim();
+  const person = document.getElementById('task-person').value.trim() || '미정';
+  const due_date = document.getElementById('task-due').value || null;
+  const status = document.getElementById('task-status').value;
+  if (!title) return alert('업무명을 입력해 주세요.');
+  const { error } = await supabase.from('tasks').insert({ title, person, due_date, status });
+  if (error) return alert('등록 실패: ' + error.message);
+  closeModal('task-modal');
+  ['task-title','task-person','task-due'].forEach(id => document.getElementById(id).value='');
+  loadTasks();
+}
+async function deleteTask(id) {
+  if (!confirm('이 업무를 삭제할까요?')) return;
+  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  if (error) return alert('삭제 실패: ' + error.message);
+  loadTasks();
+}
+
+// ====================================================================
+// 파일 공유
+// ====================================================================
+async function loadFiles() {
+  const { data, error } = await supabase.from('files').select('*').order('created_at',{ascending:false});
+  const el = document.getElementById('file-list');
+  if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
+  if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>공유된 파일이 없습니다.</p></div>'; return; }
+  el.innerHTML = data.map(f => `
+    <div class="card">
+      <div class="file-item">
+        <div class="file-icon">${f.file_type}</div>
+        <div class="file-info">
+          <div class="file-name">${esc(f.name)}</div>
+          <div class="file-meta">${esc(f.author)} · ${fmtDate(f.created_at)}</div>
+        </div>
+        ${f.url ? `<a class="file-action" href="${esc(f.url)}" target="_blank">열기 →</a>` : ''}
+        <span class="file-action" style="color:var(--danger)" onclick="deleteFile('${f.id}')">삭제</span>
+      </div>
+    </div>`).join('');
+}
+async function addFile() {
+  const name = document.getElementById('file-name-input').value.trim();
+  const url = document.getElementById('file-url').value.trim();
+  const author = document.getElementById('file-author').value.trim() || '익명';
+  const file_type = document.getElementById('file-type').value;
+  if (!name) return alert('이름을 입력해 주세요.');
+  const { error } = await supabase.from('files').insert({ name, url, author, file_type });
+  if (error) return alert('등록 실패: ' + error.message);
+  closeModal('file-modal');
+  ['file-name-input','file-url','file-author'].forEach(id => document.getElementById(id).value='');
+  loadFiles();
+}
+async function deleteFile(id) {
+  if (!confirm('이 파일을 목록에서 삭제할까요?')) return;
+  const { error } = await supabase.from('files').delete().eq('id', id);
+  if (error) return alert('삭제 실패: ' + error.message);
+  loadFiles();
+}
+</script>
+</body>
+</html>
