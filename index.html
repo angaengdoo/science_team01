@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>과학팀 AI허브</title>
+<title>편집팀 AI허브</title>
 
 <!-- ============================================================
   설정값: 본인 Supabase 프로젝트 정보와 공통 암호를 아래에 입력하세요.
@@ -17,6 +17,8 @@
 <!-- ============================================================ -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -100,7 +102,7 @@
 
   /* ── 홈 대시보드 ── */
   .home-hero {
-    position: relative; padding: 56px 24px 44px; text-align: center;
+    position: relative; padding: 0 24px 28px; text-align: center;
     border-radius: 24px; overflow: hidden; margin-bottom: 28px;
     isolation: isolate;
   }
@@ -117,15 +119,33 @@
     content: ''; position: absolute; inset: 0; z-index: -1;
     background: linear-gradient(180deg, rgba(251,250,247,0) 55%, var(--bg) 100%);
   }
-  .home-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: 2.5px; color: var(--accent);
-    margin-bottom: 14px;
+
+  .hero-stage {
+    position: relative; height: 200px; max-width: 560px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
   }
-  .home-title {
-    font-size: 44px; font-weight: 700; line-height: 1.18; letter-spacing: -1px;
-    color: var(--text-primary); margin-bottom: 16px;
+  .hero-badge {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 9px 22px; font-size: 13px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: .3px; box-shadow: 0 10px 24px -12px rgba(55,53,47,.18); z-index: 2;
   }
-  .home-sub { font-size: 14px; color: var(--text-secondary); }
+  .deco { position: absolute; }
+  .deco-star1 { width: 38px; top: 6px; left: 6%; animation: floaty 3.4s ease-in-out infinite; }
+  .deco-star2 { width: 24px; top: 36px; right: 12%; animation: floaty 2.8s ease-in-out infinite .4s; }
+  .deco-star3 { width: 30px; bottom: 14px; left: 16%; animation: floaty 3.8s ease-in-out infinite .7s; }
+  .deco-star4 { width: 20px; top: 10px; right: 30%; animation: floaty 2.4s ease-in-out infinite 1s; }
+  .deco-cloud1 { width: 84px; top: 2px; right: 2%; opacity: .95; animation: floaty 4.2s ease-in-out infinite .2s; }
+  .deco-cloud2 { width: 64px; bottom: 6px; left: 0; opacity: .85; animation: floaty 4.6s ease-in-out infinite 1.2s; }
+  .deco-dot1 { width: 14px; top: 60px; left: 28%; animation: floaty 2.6s ease-in-out infinite .3s; }
+  .deco-dot2 { width: 12px; bottom: 36px; right: 22%; animation: floaty 3s ease-in-out infinite .8s; }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-9px) rotate(-6deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deco { animation: none; }
+  }
+  .home-sub { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
   .dash-grid {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 36px;
   }
@@ -147,8 +167,15 @@
 
   @media (max-width: 720px) {
     .dash-grid { grid-template-columns: repeat(2, 1fr); }
-    .home-title { font-size: 32px; }
-    .home-hero { padding: 40px 16px 32px; }
+    .home-hero { padding: 0 16px 24px; }
+    .hero-stage { height: 150px; }
+    .hero-badge { font-size: 11px; padding: 7px 16px; }
+    .deco-star1 { width: 26px; }
+    .deco-star2 { width: 18px; }
+    .deco-star3 { width: 20px; }
+    .deco-star4 { width: 14px; }
+    .deco-cloud1 { width: 58px; }
+    .deco-cloud2 { width: 44px; }
   }
 
   .board-tabs { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -305,7 +332,7 @@
 <div id="lock-screen">
   <div class="lock-box">
     <div class="emoji">🔒</div>
-    <h2>과학팀 AI허브</h2>
+    <h2>편집팀 AI허브</h2>
     <p>접속 암호를 입력해 주세요</p>
     <input type="password" id="lock-input" placeholder="암호 입력" onkeydown="if(event.key==='Enter')tryUnlock()">
     <button onclick="tryUnlock()">입장하기</button>
@@ -316,7 +343,7 @@
 <!-- ── 앱 본체 ── -->
 <div id="app">
 <header>
-  <div class="logo"><span class="dot"></span>과학팀 <span>AI허브</span></div>
+  <div class="logo"><span class="dot"></span>편집팀 <span>AI허브</span></div>
   <nav>
     <button class="active" onclick="showSection('home', event)">🏠 홈</button>
     <button onclick="showSection('notice', event)">📢 공지</button>
@@ -331,9 +358,18 @@
 
   <!-- 홈 (대시보드) -->
   <div class="section active" id="section-home">
-    <div class="home-hero">
-      <div class="home-eyebrow">EDITOR'S AI HUB</div>
-      <h1 class="home-title">과학팀<br>AI허브</h1>
+    <div class="home-hero home-hero-big">
+      <div class="hero-stage">
+        <svg class="deco deco-star1" viewBox="0 0 40 40"><path d="M20 2 L24 16 L38 20 L24 24 L20 38 L16 24 L2 20 L16 16 Z" fill="#FFC23B" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="deco deco-star2" viewBox="0 0 28 28"><path d="M14 1 L17 11 L27 14 L17 17 L14 27 L11 17 L1 14 L11 11 Z" fill="#E8703A" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="deco deco-star3" viewBox="0 0 32 32"><path d="M16 1 L19.5 13 L31 16 L19.5 19 L16 31 L12.5 19 L1 16 L12.5 13 Z" fill="#A569E0" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="deco deco-star4" viewBox="0 0 22 22"><path d="M11 0.5 L13.5 8.5 L21.5 11 L13.5 13.5 L11 21.5 L8.5 13.5 L0.5 11 L8.5 8.5 Z" fill="#2FA8C4" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="deco deco-cloud1" viewBox="0 0 64 36"><path d="M14 30 C4 30 2 18 12 16 C12 6 28 4 32 12 C44 8 54 16 50 24 C58 24 58 30 50 30 Z" fill="#fff" stroke="#37352F" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="deco deco-cloud2" viewBox="0 0 64 36"><path d="M14 30 C4 30 2 18 12 16 C12 6 28 4 32 12 C44 8 54 16 50 24 C58 24 58 30 50 30 Z" fill="#fff" stroke="#37352F" stroke-width="2" stroke-linejoin="round" opacity="0.9"/></svg>
+        <svg class="deco deco-dot1" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#4CAF6E" stroke="#fff" stroke-width="2"/></svg>
+        <svg class="deco deco-dot2" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#F2484B" stroke="#fff" stroke-width="2"/></svg>
+        <div class="hero-badge">EDITOR'S AI HUB · 편집팀 AI허브</div>
+      </div>
       <p class="home-sub">공지, 자료, 일정, 업무를 한곳에서 — 오늘의 현황을 확인하세요.</p>
     </div>
     <div class="dash-grid">
