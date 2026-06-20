@@ -327,6 +327,7 @@
       <div class="section-title">파일 공유</div>
       <button class="btn-primary" onclick="openModal('file-modal')">+ 링크/파일 추가</button>
     </div>
+    <div class="board-tabs" id="file-tabs"></div>
     <div id="file-list" class="loading">불러오는 중...</div>
   </div>
 
@@ -969,11 +970,31 @@ async function saveEditTask() {
 // 파일 공유
 // ====================================================================
 let filesCache = [];
+let activeFileType = '전체';
+const FILE_TYPE_LABELS = { '전체':'전체', '🌐':'HTML 시뮬레이션', '📄':'PDF', '📊':'스프레드시트', '🔗':'링크', '📁':'기타' };
+const FILE_TYPE_ORDER = ['전체','🌐','📄','📊','🔗','📁'];
+
+function renderFileTabs() {
+  const el = document.getElementById('file-tabs');
+  el.innerHTML = FILE_TYPE_ORDER.map(t =>
+    `<span class="board-tab${t===activeFileType?' active':''}" onclick="switchFileType('${t}')">${t==='전체'?'전체':t+' '+FILE_TYPE_LABELS[t]}</span>`
+  ).join('');
+}
+function switchFileType(t) {
+  activeFileType = t;
+  renderFileTabs();
+  renderFileList();
+}
 async function loadFiles() {
   const { data, error } = await db.from('files').select('*').order('created_at',{ascending:false});
-  const el = document.getElementById('file-list');
-  if (error) { el.innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
+  if (error) { document.getElementById('file-list').innerHTML = '<div class="empty-state">불러오기 실패</div>'; return; }
   filesCache = data;
+  renderFileTabs();
+  renderFileList();
+}
+function renderFileList() {
+  const el = document.getElementById('file-list');
+  const data = activeFileType === '전체' ? filesCache : filesCache.filter(f => f.file_type === activeFileType);
   if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>공유된 파일이 없습니다.</p></div>'; return; }
   el.innerHTML = data.map(f => `
     <div class="card">
