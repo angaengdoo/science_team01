@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>편집팀 AI허브</title>
+<title>과학팀 AI 허브</title>
 
 <!-- ============================================================
   설정값: 본인 Supabase 프로젝트 정보와 공통 암호를 아래에 입력하세요.
@@ -86,9 +86,11 @@
   nav button {
     background: none; border: none; padding: 8px 16px; border-radius: 7px; position: relative;
     font-size: 16.5px; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all .15s;
+    text-shadow: 0.3px 0 0 currentColor, -0.3px 0 0 currentColor;
+    -webkit-font-smoothing: antialiased;
   }
   nav button:hover { background: var(--bg); color: var(--text-primary); }
-  nav button.active { color: var(--accent); font-weight: 700; }
+  nav button.active { color: var(--accent); font-weight: 700; text-shadow: 0.4px 0 0 currentColor, -0.4px 0 0 currentColor; }
   nav button.active::after {
     content: ''; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2px;
     border-radius: 2px; background: var(--grad);
@@ -332,7 +334,7 @@
 <div id="lock-screen">
   <div class="lock-box">
     <div class="emoji">🔒</div>
-    <h2>편집팀 AI허브</h2>
+    <h2>과학팀 AI 허브</h2>
     <p>접속 암호를 입력해 주세요</p>
     <input type="password" id="lock-input" placeholder="암호 입력" onkeydown="if(event.key==='Enter')tryUnlock()">
     <button onclick="tryUnlock()">입장하기</button>
@@ -343,7 +345,7 @@
 <!-- ── 앱 본체 ── -->
 <div id="app">
 <header>
-  <div class="logo"><span class="dot"></span>편집팀 <span>AI허브</span></div>
+  <div class="logo"><span class="dot"></span>과학팀 <span>AI허브</span></div>
   <nav>
     <button class="active" onclick="showSection('home', event)">🏠 홈</button>
     <button onclick="showSection('notice', event)">📢 공지</button>
@@ -368,7 +370,7 @@
         <svg class="deco deco-cloud2" viewBox="0 0 64 36"><path d="M14 30 C4 30 2 18 12 16 C12 6 28 4 32 12 C44 8 54 16 50 24 C58 24 58 30 50 30 Z" fill="#fff" stroke="#37352F" stroke-width="2" stroke-linejoin="round" opacity="0.9"/></svg>
         <svg class="deco deco-dot1" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#4CAF6E" stroke="#fff" stroke-width="2"/></svg>
         <svg class="deco deco-dot2" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#F2484B" stroke="#fff" stroke-width="2"/></svg>
-        <div class="hero-badge">EDITOR'S AI HUB · 편집팀 AI허브</div>
+        <div class="hero-badge">과학팀 AI 허브</div>
       </div>
       <p class="home-sub">공지, 자료, 일정, 업무를 한곳에서 — 오늘의 현황을 확인하세요.</p>
     </div>
