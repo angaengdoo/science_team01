@@ -79,16 +79,16 @@
     display: flex; align-items: center; justify-content: space-between; height: 58px;
     position: sticky; top: 0; z-index: 100;
   }
-  .logo { font-size: 17px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 9px; letter-spacing: -0.2px; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 9px; letter-spacing: -0.2px; }
   .logo .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--grad); box-shadow: 0 0 0 4px var(--accent-light); }
-  .logo span { color: var(--accent); }
+  .logo span { color: var(--accent); font-weight: 700; }
   nav { display: flex; gap: 2px; }
   nav button {
     background: none; border: none; padding: 8px 16px; border-radius: 7px; position: relative;
-    font-size: 14px; color: var(--text-secondary); cursor: pointer; transition: all .15s;
+    font-size: 16.5px; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all .15s;
   }
   nav button:hover { background: var(--bg); color: var(--text-primary); }
-  nav button.active { color: var(--accent); font-weight: 600; }
+  nav button.active { color: var(--accent); font-weight: 700; }
   nav button.active::after {
     content: ''; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2px;
     border-radius: 2px; background: var(--grad);
@@ -162,7 +162,7 @@
     font-size: 26px; font-weight: 700; margin-bottom: 4px;
     background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .dash-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .dash-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
   .home-recent-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
 
   @media (max-width: 720px) {
