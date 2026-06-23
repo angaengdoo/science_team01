@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>과학팀 AI허브</title>
+<title>편집팀 AI허브</title>
 
 <!-- ============================================================
   설정값: 본인 Supabase 프로젝트 정보와 공통 암호를 아래에 입력하세요.
@@ -145,7 +145,7 @@
   @media (prefers-reduced-motion: reduce) {
     .deco { animation: none; }
   }
-  .home-sub { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+  .home-sub { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-top: 4px; }
   .dash-grid {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 36px;
   }
@@ -162,8 +162,8 @@
     font-size: 26px; font-weight: 700; margin-bottom: 4px;
     background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .dash-label { font-size: 12px; color: var(--text-secondary); }
-  .home-recent-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
+  .dash-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .home-recent-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
 
   @media (max-width: 720px) {
     .dash-grid { grid-template-columns: repeat(2, 1fr); }
@@ -226,7 +226,7 @@
   .post-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
   .post-title { font-size: 15px; font-weight: 500; cursor: pointer; line-height: 1.5; }
   .post-title:hover { color: var(--accent); }
-  .post-preview { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
+  .post-preview { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
 
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200;
@@ -290,12 +290,12 @@
   .kanban { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
   .kanban-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
   .kanban-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .kanban-col-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+  .kanban-col-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
   .kanban-count { font-size: 11px; color: var(--text-muted); background: var(--bg); border-radius: 10px; padding: 1px 7px; }
   .kanban-card { background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-bottom: 8px; position: relative; transition: box-shadow .15s, transform .15s; }
   .kanban-card:hover { box-shadow: 0 8px 18px -10px rgba(55,53,47,.2); transform: translateY(-1px); }
   .kanban-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
-  .kanban-card-meta { font-size: 11px; color: var(--text-muted); }
+  .kanban-card-meta { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
   .kanban-card-del { position: absolute; top: 8px; right: 10px; cursor: pointer; color: var(--text-muted); font-size: 14px; }
   .kanban-card-del:hover { color: var(--danger); }
   .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
@@ -307,7 +307,7 @@
   .file-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
   .file-info { flex: 1; }
   .file-name { font-size: 14px; font-weight: 500; }
-  .file-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .file-meta { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 2px; }
   .file-action { font-size: 12px; color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 500; margin-left: 10px; }
   .file-action:hover { text-decoration: underline; }
 
@@ -332,7 +332,7 @@
 <div id="lock-screen">
   <div class="lock-box">
     <div class="emoji">🔒</div>
-    <h2>과학팀 AI허브</h2>
+    <h2>편집팀 AI허브</h2>
     <p>접속 암호를 입력해 주세요</p>
     <input type="password" id="lock-input" placeholder="암호 입력" onkeydown="if(event.key==='Enter')tryUnlock()">
     <button onclick="tryUnlock()">입장하기</button>
@@ -343,7 +343,7 @@
 <!-- ── 앱 본체 ── -->
 <div id="app">
 <header>
-  <div class="logo"><span class="dot"></span>과학팀 <span>AI허브</span></div>
+  <div class="logo"><span class="dot"></span>편집팀 <span>AI허브</span></div>
   <nav>
     <button class="active" onclick="showSection('home', event)">🏠 홈</button>
     <button onclick="showSection('notice', event)">📢 공지</button>
@@ -368,7 +368,7 @@
         <svg class="deco deco-cloud2" viewBox="0 0 64 36"><path d="M14 30 C4 30 2 18 12 16 C12 6 28 4 32 12 C44 8 54 16 50 24 C58 24 58 30 50 30 Z" fill="#fff" stroke="#37352F" stroke-width="2" stroke-linejoin="round" opacity="0.9"/></svg>
         <svg class="deco deco-dot1" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#4CAF6E" stroke="#fff" stroke-width="2"/></svg>
         <svg class="deco deco-dot2" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#F2484B" stroke="#fff" stroke-width="2"/></svg>
-        <div class="hero-badge">SCIENCE TEAM'S AI HUB · 과학팀 AI허브</div>
+        <div class="hero-badge">EDITOR'S AI HUB · 편집팀 AI허브</div>
       </div>
       <p class="home-sub">공지, 자료, 일정, 업무를 한곳에서 — 오늘의 현황을 확인하세요.</p>
     </div>
@@ -549,7 +549,10 @@
   <div class="modal">
     <h3>📅 일정 추가</h3>
     <div class="form-group"><label>일정명</label><input type="text" id="event-title"></div>
-    <div class="form-group"><label>날짜</label><input type="date" id="event-date"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group"><label>시작일</label><input type="date" id="event-date"></div>
+      <div class="form-group"><label>종료일 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label><input type="date" id="event-end-date"></div>
+    </div>
     <div class="form-group">
       <label>구분</label>
       <select id="event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
@@ -566,7 +569,10 @@
   <div class="modal">
     <h3>✏️ 일정 수정</h3>
     <div class="form-group"><label>일정명</label><input type="text" id="edit-event-title"></div>
-    <div class="form-group"><label>날짜</label><input type="date" id="edit-event-date"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="form-group"><label>시작일</label><input type="date" id="edit-event-date"></div>
+      <div class="form-group"><label>종료일 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label><input type="date" id="edit-event-end-date"></div>
+    </div>
     <div class="form-group">
       <label>구분</label>
       <select id="edit-event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
@@ -626,7 +632,7 @@
     <div class="form-group">
       <label>구분</label>
       <select id="file-type">
-        <option value="🌐">시뮬레이션</option><option value="📄">PDF</option>
+        <option value="🌐">HTML 시뮬레이션</option><option value="📄">PDF</option>
         <option value="📊">스프레드시트</option><option value="🔗">링크</option><option value="📁">기타</option>
       </select>
     </div>
@@ -646,7 +652,7 @@
     <div class="form-group">
       <label>구분</label>
       <select id="edit-file-type">
-        <option value="🌐">시뮬레이션</option><option value="📄">PDF</option>
+        <option value="🌐">HTML 시뮬레이션</option><option value="📄">PDF</option>
         <option value="📊">스프레드시트</option><option value="🔗">링크</option><option value="📁">기타</option>
       </select>
     </div>
@@ -1032,10 +1038,24 @@ function renderCalendar() {
       else { d = dayCount++; }
       const dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
       const isToday = thisMonth && dateStr === todayStr;
-      const dayEvents = eventsCache.filter(e => e.event_date === dateStr);
+      const dayEvents = eventsCache.filter(e => {
+        if (e.event_date === dateStr) return true;
+        if (e.event_end_date && e.event_date <= dateStr && e.event_end_date >= dateStr) return true;
+        return false;
+      });
+      const isRangeStart = (e) => e.event_date === dateStr && e.event_end_date && e.event_end_date !== e.event_date;
+      const isRangeEnd = (e) => e.event_end_date === dateStr && e.event_end_date !== e.event_date;
+      const isRangeMid = (e) => e.event_end_date && e.event_date < dateStr && e.event_end_date > dateStr;
       html += `<div class="calendar-day${!thisMonth?' other-month':''}${isToday?' today':''}">
         <div class="day-num">${d}</div>
-        ${dayEvents.map(e=>`<div class="cal-event${e.event_type==='마감'?' notice-ev':''}" onclick="event.stopPropagation(); openEventEdit('${e.id}')">${esc(e.title)}</div>`).join('')}
+        ${dayEvents.map(e=>{
+          let cls = 'cal-event' + (e.event_type==='마감'?' notice-ev':'');
+          let style = '';
+          if (isRangeStart(e)) style = 'border-radius:6px 0 0 6px; margin-right:-1px;';
+          else if (isRangeEnd(e)) style = 'border-radius:0 6px 6px 0; margin-left:-1px;';
+          else if (isRangeMid(e)) style = 'border-radius:0; margin:0 -1px;';
+          return `<div class="${cls}" style="${style}" onclick="event.stopPropagation(); openEventEdit('${e.id}')">${isRangeMid(e)?'':esc(e.title)}</div>`;
+        }).join('')}
       </div>`;
     }
     if (dayCount > lastDate && row >= 4) break;
@@ -1045,12 +1065,14 @@ function renderCalendar() {
 async function addEvent() {
   const title = document.getElementById('event-title').value.trim();
   const event_date = document.getElementById('event-date').value;
+  const event_end_date = document.getElementById('event-end-date').value || null;
   const event_type = document.getElementById('event-type').value;
-  if (!title || !event_date) return alert('일정명과 날짜를 입력해 주세요.');
-  const { error } = await db.from('events').insert({ title, event_date, event_type });
+  if (!title || !event_date) return alert('일정명과 시작일을 입력해 주세요.');
+  if (event_end_date && event_end_date < event_date) return alert('종료일은 시작일보다 이후여야 합니다.');
+  const { error } = await db.from('events').insert({ title, event_date, event_end_date, event_type });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('event-modal');
-  ['event-title','event-date'].forEach(id => document.getElementById(id).value='');
+  ['event-title','event-date','event-end-date'].forEach(id => document.getElementById(id).value='');
   loadEvents();
 }
 let currentEventId = null;
@@ -1060,15 +1082,18 @@ function openEventEdit(id) {
   currentEventId = id;
   document.getElementById('edit-event-title').value = ev.title;
   document.getElementById('edit-event-date').value = ev.event_date;
+  document.getElementById('edit-event-end-date').value = ev.event_end_date || '';
   document.getElementById('edit-event-type').value = ev.event_type;
   openModal('event-edit-modal');
 }
 async function saveEditEvent() {
   const title = document.getElementById('edit-event-title').value.trim();
   const event_date = document.getElementById('edit-event-date').value;
+  const event_end_date = document.getElementById('edit-event-end-date').value || null;
   const event_type = document.getElementById('edit-event-type').value;
-  if (!title || !event_date) return alert('일정명과 날짜를 입력해 주세요.');
-  const { error } = await db.from('events').update({ title, event_date, event_type }).eq('id', currentEventId);
+  if (!title || !event_date) return alert('일정명과 시작일을 입력해 주세요.');
+  if (event_end_date && event_end_date < event_date) return alert('종료일은 시작일보다 이후여야 합니다.');
+  const { error } = await db.from('events').update({ title, event_date, event_end_date, event_type }).eq('id', currentEventId);
   if (error) return alert('수정 실패: ' + error.message);
   closeModal('event-edit-modal');
   loadEvents();
