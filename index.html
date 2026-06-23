@@ -345,7 +345,7 @@
 <!-- ── 앱 본체 ── -->
 <div id="app">
 <header>
-  <div class="logo"><span class="dot"></span>과학팀 <span>AI허브</span></div>
+  <div class="logo"><span class="dot"></span>과학팀 <span>AI 허브</span></div>
   <nav>
     <button class="active" onclick="showSection('home', event)">🏠 홈</button>
     <button onclick="showSection('notice', event)">📢 공지</button>
@@ -556,8 +556,8 @@
       <div class="form-group"><label>종료일 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label><input type="date" id="event-end-date"></div>
     </div>
     <div class="form-group">
-      <label>구분</label>
-      <select id="event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
+      <label>메모 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+      <input type="text" id="event-memo" placeholder="간단한 메모를 남겨보세요">
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('event-modal')">취소</button>
@@ -576,8 +576,8 @@
       <div class="form-group"><label>종료일 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label><input type="date" id="edit-event-end-date"></div>
     </div>
     <div class="form-group">
-      <label>구분</label>
-      <select id="edit-event-type"><option value="일정">일반 일정</option><option value="마감">마감</option><option value="회의">회의</option></select>
+      <label>메모 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+      <input type="text" id="edit-event-memo" placeholder="간단한 메모를 남겨보세요">
     </div>
     <div class="modal-footer">
       <button class="btn-secondary btn-danger" onclick="deleteEditEvent()">삭제</button>
@@ -1068,13 +1068,13 @@ async function addEvent() {
   const title = document.getElementById('event-title').value.trim();
   const event_date = document.getElementById('event-date').value;
   const event_end_date = document.getElementById('event-end-date').value || null;
-  const event_type = document.getElementById('event-type').value;
+  const memo = document.getElementById('event-memo').value.trim() || null;
   if (!title || !event_date) return alert('일정명과 시작일을 입력해 주세요.');
   if (event_end_date && event_end_date < event_date) return alert('종료일은 시작일보다 이후여야 합니다.');
-  const { error } = await db.from('events').insert({ title, event_date, event_end_date, event_type });
+  const { error } = await db.from('events').insert({ title, event_date, event_end_date, event_type: '일정', memo });
   if (error) return alert('등록 실패: ' + error.message);
   closeModal('event-modal');
-  ['event-title','event-date','event-end-date'].forEach(id => document.getElementById(id).value='');
+  ['event-title','event-date','event-end-date','event-memo'].forEach(id => document.getElementById(id).value='');
   loadEvents();
 }
 let currentEventId = null;
@@ -1085,17 +1085,17 @@ function openEventEdit(id) {
   document.getElementById('edit-event-title').value = ev.title;
   document.getElementById('edit-event-date').value = ev.event_date;
   document.getElementById('edit-event-end-date').value = ev.event_end_date || '';
-  document.getElementById('edit-event-type').value = ev.event_type;
+  document.getElementById('edit-event-memo').value = ev.memo || '';
   openModal('event-edit-modal');
 }
 async function saveEditEvent() {
   const title = document.getElementById('edit-event-title').value.trim();
   const event_date = document.getElementById('edit-event-date').value;
   const event_end_date = document.getElementById('edit-event-end-date').value || null;
-  const event_type = document.getElementById('edit-event-type').value;
+  const memo = document.getElementById('edit-event-memo').value.trim() || null;
   if (!title || !event_date) return alert('일정명과 시작일을 입력해 주세요.');
   if (event_end_date && event_end_date < event_date) return alert('종료일은 시작일보다 이후여야 합니다.');
-  const { error } = await db.from('events').update({ title, event_date, event_end_date, event_type }).eq('id', currentEventId);
+  const { error } = await db.from('events').update({ title, event_date, event_end_date, memo }).eq('id', currentEventId);
   if (error) return alert('수정 실패: ' + error.message);
   closeModal('event-edit-modal');
   loadEvents();
